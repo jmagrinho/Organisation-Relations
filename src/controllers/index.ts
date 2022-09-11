@@ -1,7 +1,7 @@
 import { OrganisationService } from "../services";
-import { RelationType } from "../utils/enums";
-import { AppLogger } from "../utils/logger";
-import { Organisation } from "../utils/types";
+import { RelationType } from "../enums/enums";
+import { AppLogger } from "../logger/logger";
+import { Organisation } from "../types/types";
 
 export class OrganisationController {
   
@@ -22,24 +22,25 @@ export class OrganisationController {
       return [];
     }
 
-
-
-    public async createRelations(parent, daughtersList): Promise<void>{
+    public async createRelations(parentName, daughtersList): Promise<void>{
       
-      await this.createOrganisation(parent);
-      let new_sis_list= new Array<Organisation>();
+      let parent = await this.createOrganisation(parentName);
+
+      let new_daughter_list= new Array<Organisation>();
 
       if (!(daughtersList === undefined || daughtersList.length == 0)) {
-          for await (let daughter of daughtersList) {
+        for await (let tempDaughter of daughtersList) {
 
-          let new_sis = await this.createOrganisation(daughter.org_name);
-          new_sis_list.push(new_sis)
+          let daughter = await this.createOrganisation(tempDaughter.org_name);
+          new_daughter_list.push(daughter)
 
-          this.createParentDaughterRelation(parent, daughter.org_name);
-          this.createRelations(daughter.org_name, daughter.daughters)
+          this.createParentDaughterRelation(parent.Id, daughter.Id);
+          await this.createRelations(daughter.Name, tempDaughter.daughters)
         };
 
-      this.createSisterRelation(new_sis_list);
+        if(new_daughter_list.length > 0){
+          await this.createSisterRelation(new_daughter_list);
+        }
       }
 
     }
@@ -61,36 +62,34 @@ export class OrganisationController {
       return serviceResult.Id
     }
 
-
-    // Creates a new organisation if there is none with the same "organisationName"
     private async createOrganisation(organisationName): Promise<Organisation> {
       const organisationExists = await this.organisationExists(organisationName)
       if (!organisationExists) {
         return await this._organisationService.createOrganisation(organisationName);
-      }
-      return null;
+      } 
+      return await this._organisationService.getOrganisation(organisationName);
     }
 
-    private async createParentDaughterRelation(parent, daughter): Promise<void> {
-      if(parent != daughter) {
-        const parentId = await this.getOrganisationId(parent);
-        const daughterId = await this.getOrganisationId(daughter);
+    private async createParentDaughterRelation(parentId, daughterId): Promise<void> {
+      if(parentId != daughterId) {
         
         //Creates Parent <-> Daughter relation
-        this._organisationService.createRelation(parentId, daughterId, RelationType.Parent);
+        await this._organisationService.createRelation(parentId, daughterId, RelationType.Parent);
         //Creates Daughter <-> Parent relation
-        this._organisationService.createRelation(daughterId, parentId, RelationType.Daughter);
+        await this._organisationService.createRelation(daughterId, parentId, RelationType.Daughter);
                
       }
     }
 
-    private createSisterRelation(daughtersList): void{
-      for(let i = 0, j=i+1; i < daughtersList.length - 1 && j < daughtersList.length; i++, j++) {      
-        
+
+    private async createSisterRelation(daughtersList): Promise<void>{
+      for(let i = 0; i < daughtersList.length - 1; i++) {
+        for(let j=i + 1; j < daughtersList.length; j++) {
+
         //Creates both Sister <-> Sister relation
         this._organisationService.createRelation(daughtersList[i].Id, daughtersList[j].Id, RelationType.Sister);
         this._organisationService.createRelation(daughtersList[j].Id, daughtersList[i].Id, RelationType.Sister);
-
+        }
       }
     }
 
