@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
-import { db } from '../utils/db.server';
-import { AppLogger } from '../utils/logger';
-import { Organisation, OrganisationRelationsList } from '../utils/types';
+import { db } from '../database/db.server';
+import { AppLogger } from '../logger/logger';
+import { Organisation, OrganisationRelationsList } from '../types/types';
 import { ROWS_LIMIT } from '../utils/variables';
 
 

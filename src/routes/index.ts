@@ -1,8 +1,9 @@
 import Router from 'koa-router';
 import { OrganisationController } from '../controllers';
 import { tryParseJSONObjectRequest } from '../utils/jsonValidation';
-import { AppLogger } from '../utils/logger';
-import { createRelationFeedbackJSON, showRelationsJSON } from '../utils/types';
+import { AppLogger } from '../logger/logger';
+import { createRelationFeedbackJSON, showRelationsJSON } from '../types/types';
+import { isNumber } from '../utils/utils';
 
 const organisationRouter = new Router();
 const organisationController = new OrganisationController();
@@ -15,7 +16,7 @@ organisationRouter.get('/:organisationName/:page', async (ctx) => {
         ctx.type="json"
         const organisationName = ctx.params.organisationName
         const page = ctx.params.page
-        if(+page < 0){
+        if(!isNumber(page) || +page < 0){
             ctx.status = 400
             ctx.message = "Page number is invalid."
             ctx.throw(ctx.status,ctx.message)

@@ -1,6 +1,6 @@
 import Koa from 'koa';
 import organisationRouter from "./routes"
-import { AppLogger } from './utils/logger';
+import { AppLogger } from './logger/logger';
 const bodyParser = require('koa-bodyparser');
 const koaBody = require('koa-body');
 
