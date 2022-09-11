@@ -1,5 +1,6 @@
 import { OrganisationService } from "../services";
 import { RelationType } from "../utils/enums";
+import { AppLogger } from "../utils/logger";
 import { Organisation } from "../utils/types";
 
 export class OrganisationController {
@@ -12,14 +13,13 @@ export class OrganisationController {
   }
 
     public async findRelations(obj) {
-      if(this.organisationExists(obj.organisationName)) {
+      if(await this.organisationExists(obj.organisationName)) {
         const organisationId = await this.getOrganisationId(obj.organisationName);
         const serviceResult = this._organisationService.getOrganisationRelations(organisationId, obj.page)
 
         return serviceResult
       }
-      const result = "{}"
-      return JSON.parse(result);
+      return [];
     }
 
 
@@ -51,6 +51,7 @@ export class OrganisationController {
       if(serviceResult){
         return true
       }
+      AppLogger.info("info",`Found no organisation with name ${organisationName}`)
       return false
     }
 
