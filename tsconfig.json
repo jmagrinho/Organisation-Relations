@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": false,
+    "experimentalDecorators": true
+  },
+  "include": ["src/**/**.ts", "test/**/**.ts"],
+  "exclude": ["node_modules"]
+}

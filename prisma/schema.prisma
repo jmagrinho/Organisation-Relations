@@ -1,0 +1,47 @@
+datasource db {
+  url      = "mysql://pipedrive:password-1!@pipedrive-task.mysql.database.azure.com:3306/pipedrive-task"
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native","windows","linux-musl"]
+}
+
+model Organisation {
+    // Makes Id PK and autoincrement
+    Id              Int         @id @default(autoincrement())
+    Name            String      @unique
+
+    FKOrganisationA_Organisation_OrganisationRelation         OrganisationRelation[]  @relation(name: "FKOrganisationA")
+    FKOrganisationB_Organisation_OrganisationRelation         OrganisationRelation[]  @relation(name: "FKOrganisationB")
+
+    // Makes PK index to improve search performance
+    @@index([Id])
+}
+
+
+model OrganisationRelation {
+    IDOrganisationA     Int                              
+    IDOrganisationB     Int
+    Type                Int
+
+    //Foreign Keys definition
+    FKType_OrganisationRelation_Relation                      Relation        @relation(fields: [Type],references: [Id])
+    FKOrganisationA_OrganisationRelation_Organisation         Organisation    @relation(fields: [IDOrganisationA],references: [Id], name: "FKOrganisationA")
+    FKOrganisationB_OrganisationRelation_Organisation         Organisation    @relation(fields: [IDOrganisationB],references: [Id], name: "FKOrganisationB")
+
+    // Makes a composed PK - The pair needs to be different from an existing row
+    @@id([IDOrganisationA, IDOrganisationB])
+    // Makes both PK indexes to improve search performance
+    @@index([IDOrganisationA])
+    @@index([IDOrganisationB])
+}
+
+model Relation {
+    Id          Int     @id 
+    Name        String  @unique
+
+    FKType_Relation_OrganisationRelation  OrganisationRelation[]
+    @@index([Id])
+}
